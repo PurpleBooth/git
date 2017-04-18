@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianFeldmann\Git;
 
 use SebastianFeldmann\Cli\Command\Runner;
@@ -64,12 +65,12 @@ class Repository
     {
         $path = empty($root) ? getcwd() : realpath($root);
         // check for existing .git dir
-        if (!is_dir($path . DIRECTORY_SEPARATOR . '.git')) {
+        if (!is_dir($path.DIRECTORY_SEPARATOR.'.git')) {
             throw new \RuntimeException(sprintf('Invalid git repository: %s', $root));
         }
-        $this->root      = $path;
-        $this->dotGitDir = $this->root . DIRECTORY_SEPARATOR . '.git';
-        $this->runner    = null == $runner ? new Runner\Simple() : $runner;
+        $this->root = $path;
+        $this->dotGitDir = $this->root.DIRECTORY_SEPARATOR.'.git';
+        $this->runner = null == $runner ? new Runner\Simple() : $runner;
     }
 
     /**
@@ -77,7 +78,7 @@ class Repository
      *
      * @return string
      */
-    public function getRoot() : string
+    public function getRoot(): string
     {
         return $this->root;
     }
@@ -87,20 +88,21 @@ class Repository
      *
      * @return string
      */
-    public function getHooksDir() : string
+    public function getHooksDir(): string
     {
-        return $this->dotGitDir . DIRECTORY_SEPARATOR . 'hooks';
+        return $this->dotGitDir.DIRECTORY_SEPARATOR.'hooks';
     }
 
     /**
      * Check for a hook file.
      *
      * @param  string $hook
+     *
      * @return bool
      */
-    public function hookExists($hook) : bool
+    public function hookExists($hook): bool
     {
-        return file_exists($this->getHooksDir() . DIRECTORY_SEPARATOR . $hook);
+        return file_exists($this->getHooksDir().DIRECTORY_SEPARATOR.$hook);
     }
 
     /**
@@ -118,11 +120,12 @@ class Repository
      *
      * @return \SebastianFeldmann\Git\CommitMessage
      */
-    public function getCommitMsg() : CommitMessage
+    public function getCommitMsg(): CommitMessage
     {
         if (null === $this->commitMsg) {
             throw new \RuntimeException('No commit message available');
         }
+
         return $this->commitMsg;
     }
 
@@ -131,13 +134,14 @@ class Repository
      *
      * @return bool
      */
-    public function isMerging() : bool
+    public function isMerging(): bool
     {
         foreach (['MERGE_MSG', 'MERGE_HEAD', 'MERGE_MODE'] as $fileName) {
-            if (file_exists($this->dotGitDir . DIRECTORY_SEPARATOR . $fileName)) {
+            if (file_exists($this->dotGitDir.DIRECTORY_SEPARATOR.$fileName)) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -146,7 +150,7 @@ class Repository
      *
      * @return \SebastianFeldmann\Git\Operator\Index
      */
-    public function getIndexOperator() : Operator\Index
+    public function getIndexOperator(): Operator\Index
     {
         return $this->getOperator('Index');
     }
@@ -156,7 +160,7 @@ class Repository
      *
      * @return \SebastianFeldmann\Git\Operator\Log
      */
-    public function getLogOperator() : Operator\Log
+    public function getLogOperator(): Operator\Log
     {
         return $this->getOperator('Log');
     }
@@ -165,14 +169,27 @@ class Repository
      * Return requested operator.
      *
      * @param  string $name
+     *
      * @return mixed
      */
     private function getOperator(string $name)
     {
         if (!isset($this->operator[$name])) {
-            $class                 = '\\SebastianFeldmann\\Git\\Operator\\' . $name;
+            $class = '\\SebastianFeldmann\\Git\\Operator\\'.$name;
             $this->operator[$name] = new $class($this->runner, $this);
         }
+
         return $this->operator[$name];
+    }
+
+
+    /**
+     * Get the repository configuration
+     *
+     * @return \SebastianFeldmann\Git\Operator\Config
+     */
+    public function getConfig(): Operator\Config
+    {
+        return $this->getOperator('Config');
     }
 }
